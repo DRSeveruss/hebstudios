@@ -1,16 +1,14 @@
 import path from 'path';
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: "export",
-  distDir: process.env.NODE_ENV === "production" ? ".next-prod" : ".next",
-  typescript: {
-    ignoreBuildErrors: true
-  },
-  // Configure for GitHub Pages
-  basePath: process.env.NODE_ENV === "production" ? "/hebstudios" : "",
-  assetPrefix: process.env.NODE_ENV === "production" ? "/hebstudios/" : "",
+  output: 'export',
+  basePath: '/hebstudios',
+  assetPrefix: '/hebstudios/',
   images: {
     unoptimized: true,
+  },
+  typescript: {
+    ignoreBuildErrors: true
   },
 };
 export default nextConfig;
