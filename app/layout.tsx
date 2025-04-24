@@ -25,8 +25,8 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return <html lang="en" className={`${inter.variable} ${montserrat.variable}`} data-oid="lvylp5j">
-            <body className="" data-oid="22m6fn:">
+  return <html lang="en" className={`${inter.variable} ${montserrat.variable}`} data-oid="6iv61jp">
+            <body className="" data-oid="1ve4tgn">
                 {children}
             
                 <Script src="/builtwith.js" strategy="afterInteractive" />
