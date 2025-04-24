@@ -134,7 +134,7 @@ export default function Page() {
                     data-oid="6vgvy-_"
                 >
                     <h1
-                        className="text-4xl md:text-6xl lg:text-7xl font-light leading-tight mb-6 max-w-4xl"
+                        className="text-4xl md:text-6xl lg:text-7xl font-medium leading-tight mb-6 max-w-4xl font-montserrat"
                         data-oid="xlg:5_l"
                     >
                         Building the future of{' '}
@@ -188,7 +188,10 @@ export default function Page() {
                 <div className="max-w-7xl mx-auto px-6" data-oid="ixu1zk7">
                     <div className="grid md:grid-cols-2 gap-12 items-center" data-oid="3t54lf6">
                         <div data-oid="d9fkacf">
-                            <h2 className="text-3xl md:text-4xl font-light mb-6" data-oid="7-:nnc8">
+                            <h2
+                                className="text-3xl md:text-4xl font-medium mb-6 font-montserrat"
+                                data-oid="7-:nnc8"
+                            >
                                 The Studio
                             </h2>
                             <p className="text-zinc-400 mb-6" data-oid="xav269x">
@@ -249,7 +252,10 @@ export default function Page() {
                 ></div>
 
                 <div className="max-w-7xl mx-auto px-6" data-oid="me.j:hk">
-                    <h2 className="text-3xl md:text-4xl font-light mb-16" data-oid="bd_vqsy">
+                    <h2
+                        className="text-3xl md:text-4xl font-medium mb-16 font-montserrat"
+                        data-oid="bd_vqsy"
+                    >
                         Our Projects
                     </h2>
 
@@ -282,7 +288,10 @@ export default function Page() {
                                     className="absolute inset-0 flex flex-col justify-end p-8 z-20"
                                     data-oid="rudwu5a"
                                 >
-                                    <h3 className="text-2xl font-medium mb-3" data-oid=":to3n50">
+                                    <h3
+                                        className="text-2xl font-semibold mb-3 font-montserrat"
+                                        data-oid=":to3n50"
+                                    >
                                         {project.title}
                                     </h3>
                                     <p
@@ -318,7 +327,10 @@ export default function Page() {
             {/* Expertise Section */}
             <section id="expertise" className="py-24 md:py-32 relative" data-oid="7n9wd80">
                 <div className="max-w-7xl mx-auto px-6" data-oid="i01upmr">
-                    <h2 className="text-3xl md:text-4xl font-light mb-16" data-oid="xfqz3z_">
+                    <h2
+                        className="text-3xl md:text-4xl font-medium mb-16 font-montserrat"
+                        data-oid="xfqz3z_"
+                    >
                         Our Expertise
                     </h2>
 
@@ -357,7 +369,10 @@ export default function Page() {
                                 <div className="text-3xl mb-4 text-zinc-500" data-oid="kmxjwyp">
                                     {expertise.icon}
                                 </div>
-                                <h3 className="text-xl font-medium mb-3" data-oid="koelfci">
+                                <h3
+                                    className="text-xl font-semibold mb-3 font-montserrat"
+                                    data-oid="koelfci"
+                                >
                                     {expertise.title}
                                 </h3>
                                 <p className="text-zinc-400" data-oid="z0n5227">
@@ -383,7 +398,10 @@ export default function Page() {
                 <div className="max-w-7xl mx-auto px-6" data-oid="21jp2a:">
                     <div className="grid md:grid-cols-2 gap-12" data-oid="t:0r80u">
                         <div data-oid="7g.0gli">
-                            <h2 className="text-3xl md:text-4xl font-light mb-6" data-oid="cya0ssp">
+                            <h2
+                                className="text-3xl md:text-4xl font-medium mb-6 font-montserrat"
+                                data-oid="cya0ssp"
+                            >
                                 Get in Touch
                             </h2>
                             <p className="text-zinc-400 mb-8" data-oid=":fls1ud">
