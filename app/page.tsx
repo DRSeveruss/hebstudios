@@ -102,7 +102,6 @@ export default function Page() {
             return () => observer.disconnect();
         });
     }, []);
-    }, []);
 
     const projects = [
         {
