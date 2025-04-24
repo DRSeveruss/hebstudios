@@ -1,15 +1,11 @@
 import path from 'path';
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Only apply these settings for production builds (GitHub Pages), not for local development
-  ...(process.env.NODE_ENV === 'production' ? {
-    output: 'export',
-    basePath: '/hebstudios',
-    assetPrefix: '/hebstudios/',
-  } : {}),
+  // Vercel deployment doesn't need these settings
+  // Remove GitHub Pages specific configuration
   
   images: {
-    unoptimized: true,
+    domains: ['images.unsplash.com'],
   },
   typescript: {
     ignoreBuildErrors: true
