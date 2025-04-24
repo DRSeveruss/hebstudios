@@ -24,6 +24,9 @@ const config: Config = {
                 sm: 'calc(var(--radius) - 4px)',
             },
             colors: {
+white: '#c1b3a7',
+brandGray: '#3F4E4F',
+brandGray: '#3F4E4F',
                 background: 'hsl(var(--background))',
                 foreground: 'hsl(var(--foreground))',
                 card: {
@@ -64,9 +67,12 @@ const config: Config = {
                     '4': 'hsl(var(--chart-4))',
                     '5': 'hsl(var(--chart-5))',
                 },
+fontWeight: {
+                extrabold: '800',
+            },
             },
         },
     },
-    plugins: [require('tailwindcss-animate')],
+    plugins: [require('tailwindcss-animate'), require('@tailwindcss/typography')],
 };
 export default config;

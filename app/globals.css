@@ -25,13 +25,6 @@
     --background-end-rgb: 255, 255, 255;
 }
 
-@media (prefers-color-scheme: dark) {
-    :root {
-        --foreground-rgb: 255, 255, 255;
-        --background-start-rgb: 0, 0, 0;
-        --background-end-rgb: 0, 0, 0;
-    }
-}
 
 @layer utilities {
     .text-balance {
@@ -51,8 +44,8 @@
 
 @layer base {
     :root {
-        --background: 40 33% 97%; /* Light beige */
-        --foreground: 20 15% 25%; /* Dark grayish brown */
+        --background: 15 6% 83%; /* Page background updated to #d7d3d1 */
+        --foreground: 20 15% 15%; /* Darker grayish brown for improved contrast */
         --card: 240 5% 98%; /* Almost white, cool gray tint */
         --card-foreground: 20 15% 25%; /* Dark grayish brown */
         --popover: 240 5% 98%; /* Almost white, cool gray tint */
@@ -61,8 +54,8 @@
         --primary-foreground: 210 20% 98%; /* Very light blue/white */
         --secondary: 40 20% 94%; /* Light beige/gray */
         --secondary-foreground: 20 10% 30%; /* Darker grayish brown */
-        --muted: 240 5% 93%; /* Light cool gray */
-        --muted-foreground: 240 4% 55%; /* Medium gray */
+        --muted: 30 19% 94%; /* Background updated to #F2EFEC */
+        --muted-foreground: 240 5% 25%; /* Darker gray for better legibility */
         --accent: 40 25% 88%; /* Soft, light gold/beige */
         --accent-foreground: 40 10% 25%; /* Darker gold/brown */
         --destructive: 0 84.2% 60.2%; /* Original Red */
@@ -77,35 +70,39 @@
         --chart-5: 27 87% 67%;
         --radius: 0.5rem; /* Original Radius */
     }
-    .dark {
-        --background: 0 0% 3.9%;
-        --foreground: 0 0% 98%;
-        --card: 0 0% 3.9%;
-        --card-foreground: 0 0% 98%;
-        --popover: 0 0% 3.9%;
-        --popover-foreground: 0 0% 98%;
-        --primary: 0 0% 98%;
-        --primary-foreground: 0 0% 9%;
-        --secondary: 0 0% 14.9%;
-        --secondary-foreground: 0 0% 98%;
-        --muted: 0 0% 14.9%;
-        --muted-foreground: 0 0% 63.9%;
-        --accent: 0 0% 14.9%;
-        --accent-foreground: 0 0% 98%;
-        --destructive: 0 62.8% 30.6%;
-        --destructive-foreground: 0 0% 98%;
-        --border: 0 0% 14.9%;
-        --input: 0 0% 14.9%;
-        --ring: 0 0% 83.1%;
-        --chart-1: 220 70% 50%;
-        --chart-2: 160 60% 45%;
-        --chart-3: 30 80% 55%;
-        --chart-4: 280 65% 60%;
-        --chart-5: 340 75% 55%;
-    }
 }
 
 @layer base {
+    html {
+        /* Control smooth scrolling speed with a custom property */
+        --scroll-duration: 0.5s; /* Faster scroll duration */
+        scroll-behavior: smooth;
+        scroll-padding-top: 100px; /* Add padding to account for the fixed header */
+    }
+    
+    /* Apply custom scroll behavior */
+    @media (prefers-reduced-motion: no-preference) {
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        /* This will be applied to all scrolling animations */
+        :root {
+            --scroll-timeline: scroll();
+            --scroll-timeline-name: scroll;
+        }
+        
+        /* Adjust animation timing for scrolling */
+        @keyframes smoothScroll {
+            from { scroll-behavior: smooth; }
+            to { scroll-behavior: smooth; }
+        }
+        
+        html {
+            animation: smoothScroll var(--scroll-duration) ease-out;
+        }
+    }
+    
     * {
         @apply border-border;
     }

@@ -1,12 +1,15 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import LegalModals from '@/components/LegalModals';
 
 export default function Page() {
     const [isLoaded, setIsLoaded] = useState(false);
     const [activeProject, setActiveProject] = useState(null);
     const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
     const heroRef = useRef<HTMLElement>(null); // Ref for the hero section
+    const bananiumVideoRef = useRef<HTMLVideoElement>(null); // Ref for bananium video
+    const legendVideoRef = useRef<HTMLVideoElement>(null); // Ref for legend video
 
     useEffect(() => {
         setIsLoaded(true);
@@ -18,9 +21,87 @@ export default function Page() {
         // Add listener to the whole window for simplicity
         window.addEventListener('mousemove', handleMouseMove);
 
+        // Smooth scrolling with native browser behavior
+        const handleNavClick = (e: MouseEvent) => {
+            const target = e.target as HTMLElement;
+            const href = target.getAttribute('href');
+            
+            // Only process anchor links
+            if (href && href.startsWith('#')) {
+                e.preventDefault();
+                
+                const targetElement = document.querySelector(href);
+                if (targetElement) {
+                    // Get element position with header offset
+                    const headerOffset = 100;
+                    const elementPosition = targetElement.getBoundingClientRect().top;
+                    const offsetPosition = elementPosition + window.scrollY - headerOffset;
+                    
+                    // Use native smooth scrolling
+                    window.scrollTo({
+                        top: offsetPosition,
+                        behavior: 'smooth'
+                    });
+                }
+            }
+        };
+        
+        // Close mobile menu when clicking outside
+        const handleClickOutside = (event: MouseEvent) => {
+            const mobileMenu = document.getElementById('mobile-menu');
+            const hamburgerButton = document.querySelector('button[aria-label="Toggle mobile menu"]');
+            
+            if (mobileMenu && !mobileMenu.classList.contains('hidden')) {
+                // Check if the click is outside the mobile menu and not on the hamburger button
+                if (
+                    mobileMenu &&
+                    hamburgerButton &&
+                    !mobileMenu.contains(event.target as Node) &&
+                    !hamburgerButton.contains(event.target as Node)
+                ) {
+                    mobileMenu.classList.add('hidden');
+                }
+            }
+        };
+        
+        // Add click event listener for closing mobile menu
+        document.addEventListener('click', handleClickOutside);
+        
+        // Add click event listeners to all navigation links
+        const navLinks = document.querySelectorAll('a[href^="#"]');
+        navLinks.forEach(link => {
+            link.addEventListener('click', handleNavClick as unknown as EventListener);
+        });
+
         return () => {
             window.removeEventListener('mousemove', handleMouseMove);
+            document.removeEventListener('click', handleClickOutside);
+            
+            // Clean up navigation click listeners
+            const navLinks = document.querySelectorAll('a[href^="#"]');
+            navLinks.forEach(link => {
+                link.removeEventListener('click', handleNavClick as unknown as EventListener);
+            });
         };
+// IntersectionObserver for mobile autoplay
+    useEffect(() => {
+        const videos = [bananiumVideoRef.current, legendVideoRef.current];
+        videos.forEach(video => {
+            if (!video) return;
+            const observer = new IntersectionObserver(
+                ([entry]) => {
+                    if (entry.isIntersecting && entry.intersectionRatio === 1) {
+                        video.play();
+                    } else {
+                        video.pause();
+                    }
+                },
+                { threshold: 1.0 }
+            );
+            observer.observe(video);
+            return () => observer.disconnect();
+        });
+    }, []);
     }, []);
 
     const projects = [
@@ -28,7 +109,7 @@ export default function Page() {
             id: 'bananium',
             title: 'bananium.ai',
             description:
-                'A cutting-edge Web3 platform leveraging artificial intelligence to create immersive digital experiences.',
+                'A bleeding-edge AAA auto-battler with where users own AI Agent fighters who battle in immersive arenas.',
             image: 'https://images.unsplash.com/photo-1639322537504-6427a16b0a28?q=80&w=1000',
         },
         {
@@ -42,7 +123,7 @@ export default function Page() {
 
     return (
         <div
-            className="min-h-screen bg-gradient-to-b from-zinc-900 to-black text-gray-100 font-sans overflow-x-hidden"
+            className="min-h-screen bg-background text-foreground font-sans overflow-x-hidden"
             data-oid="lgzdk24"
         >
             {/* Texture Overlay */}
@@ -53,14 +134,16 @@ export default function Page() {
 
             {/* Navigation */}
             <nav
-                className={`fixed w-full z-50 transition-all duration-700 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
+                className={`fixed top-6 w-full z-50 flex justify-center transition-all duration-700 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
                 data-oid="par:858"
             >
                 <div
-                    className="max-w-7xl mx-auto px-6 py-6 flex justify-between items-center"
+                    className="inline-flex bg-muted rounded-full px-6 py-4 items-center gap-8 relative shadow-2xl"
                     data-oid="p:2xadb"
                 >
-                    <div className="flex items-center" data-oid="q_sn_rs">
+                    {/* Gradient Overlay for Desktop */}
+                    <div className="hidden" aria-hidden="true" data-oid="_:zmrc9"></div>
+                    <a href="#" className="flex items-center relative z-10" data-oid="q_sn_rs">
                         {/* Logo */}
                         <img
                             src="/images/elephant-logo.png"
@@ -69,10 +152,11 @@ export default function Page() {
                             data-oid="bq6h59y"
                         />
 
-                        <div className="text-xl font-medium tracking-tight" data-oid="_jjvbtg">
-                            HEB Studios
+                        <div className="text-xl tracking-tight font-montserrat" data-oid="_jjvbtg">
+                            <span className="font-bold">HEB</span>{" "}
+                            <span className="font-normal">Studios</span>
                         </div>
-                    </div>
+                    </a>
 
                     <div
                         className="hidden md:flex space-x-8 text-sm font-medium"
@@ -80,44 +164,123 @@ export default function Page() {
                     >
                         <a
                             href="#about"
-                            className="hover:text-white transition-colors"
+                            className="hover:text-foreground transition-colors"
                             data-oid="s-uc0b3"
                         >
                             About
                         </a>
                         <a
                             href="#projects"
-                            className="hover:text-white transition-colors"
+                            className="hover:text-foreground transition-colors"
                             data-oid="jjw0__c"
                         >
                             Projects
                         </a>
                         <a
+                            href="#team"
+                            className="hover:text-foreground transition-colors"
+                        >
+                            Team
+                        </a>
+                        <a
                             href="#expertise"
-                            className="hover:text-white transition-colors"
+                            className="hover:text-foreground transition-colors"
                             data-oid="o4z62:u"
+                        >
+                            Expertise
+                        </a>
+                    </div>
+
+                    <a
+                        href="#contact"
+                        className="hidden md:inline-block px-5 py-2 border border-foreground text-foreground rounded-full text-sm hover:bg-muted transition-colors"
+                        data-oid="eqgaf8u"
+                    >
+                        Get in Touch
+                    </a>
+
+                    <button
+                        className="md:hidden text-2xl"
+                        onClick={() => {
+                            const mobileMenu = document.getElementById('mobile-menu');
+                            if (mobileMenu) {
+                                mobileMenu.classList.toggle('hidden');
+                            }
+                        }}
+                        aria-label="Toggle mobile menu"
+                        data-oid="tsjk:6b"
+                    >
+                        ☰
+                    </button>
+                </div>
+                
+                {/* Mobile Menu */}
+                <div
+                    id="mobile-menu"
+                    className="hidden absolute top-20 left-0 right-0 bg-muted rounded-lg mx-4 p-4 shadow-lg z-40"
+                >
+                    <div className="flex flex-col space-y-4 text-sm font-medium">
+                        <a
+                            href="#about"
+                            className="hover:text-foreground transition-colors py-2"
+                            onClick={() => {
+                                const mobileMenu = document.getElementById('mobile-menu');
+                                if (mobileMenu) {
+                                    mobileMenu.classList.add('hidden');
+                                }
+                            }}
+                        >
+                            About
+                        </a>
+                        <a
+                            href="#projects"
+                            className="hover:text-foreground transition-colors py-2"
+                            onClick={() => {
+                                const mobileMenu = document.getElementById('mobile-menu');
+                                if (mobileMenu) {
+                                    mobileMenu.classList.add('hidden');
+                                }
+                            }}
+                        >
+                            Projects
+                        </a>
+                        <a
+                            href="#team"
+                            className="hover:text-foreground transition-colors py-2"
+                            onClick={() => {
+                                const mobileMenu = document.getElementById('mobile-menu');
+                                if (mobileMenu) {
+                                    mobileMenu.classList.add('hidden');
+                                }
+                            }}
+                        >
+                            Team
+                        </a>
+                        <a
+                            href="#expertise"
+                            className="hover:text-foreground transition-colors py-2"
+                            onClick={() => {
+                                const mobileMenu = document.getElementById('mobile-menu');
+                                if (mobileMenu) {
+                                    mobileMenu.classList.add('hidden');
+                                }
+                            }}
                         >
                             Expertise
                         </a>
                         <a
                             href="#contact"
-                            className="hover:text-white transition-colors"
-                            data-oid="fnclwnr"
+                            className="px-5 py-2 border border-foreground text-foreground rounded-full text-sm hover:bg-muted transition-colors"
+                            onClick={() => {
+                                const mobileMenu = document.getElementById('mobile-menu');
+                                if (mobileMenu) {
+                                    mobileMenu.classList.add('hidden');
+                                }
+                            }}
                         >
-                            Contact
+                            Get in Touch
                         </a>
                     </div>
-
-                    <button
-                        className="hidden md:block px-5 py-2 border border-zinc-700 rounded-full text-sm hover:bg-zinc-800 transition-colors"
-                        data-oid="eqgaf8u"
-                    >
-                        Get in Touch
-                    </button>
-
-                    <button className="md:hidden text-2xl" data-oid="tsjk:6b">
-                        ☰
-                    </button>
                 </div>
             </nav>
 
@@ -143,17 +306,17 @@ export default function Page() {
                     data-oid="e4qi_hp"
                 >
                     <h1
-                        className="text-4xl md:text-6xl lg:text-7xl font-bold leading-tight mb-6 max-w-4xl font-montserrat"
+                        className="text-4xl md:text-6xl lg:text-7xl font-extrabold leading-tight mb-6 max-w-4xl font-montserrat"
                         data-oid="cxklf6i"
                     >
                         Building the future of{' '}
-                        <span className="text-zinc-400" data-oid="llrm2wd">
+                        <span className="text-primary" data-oid="llrm2wd">
                             Web3 experiences
                         </span>
                     </h1>
 
                     <p
-                        className="text-lg md:text-xl text-zinc-400 max-w-2xl mb-12 font-light"
+                        className="text-lg md:text-xl text-primary max-w-2xl mb-12 font-light"
                         data-oid="89pqiqt"
                     >
                         HEB Studios specializes in creating cutting-edge Web3 projects with AAA
@@ -161,35 +324,24 @@ export default function Page() {
                     </p>
 
                     <div className="flex flex-col sm:flex-row gap-4" data-oid="bx5mj9r">
-                        <button
-                            className="px-8 py-3 bg-zinc-800 text-white rounded-full hover:bg-zinc-700 transition-colors"
+                        <a
+                            href="#projects"
+                            className="px-8 py-3 bg-foreground text-white rounded-full hover:bg-foreground/90 transition-colors"
                             data-oid="tchawxp"
                         >
                             Explore Our Work
-                        </button>
-                        <button
-                            className="px-8 py-3 border border-zinc-700 rounded-full hover:bg-zinc-800 transition-colors"
+                        </a>
+                        <a
+                            href="#about"
+                            className="px-8 py-3 border border-primary text-primary rounded-full hover:bg-primary hover:text-primary-foreground transition-colors"
                             data-oid="t5al:wq"
                         >
                             Learn More
-                        </button>
+                        </a>
                     </div>
                 </div>
 
-                {/* Abstract 3D shape inspired by the provided images */}
-                <div
-                    className="absolute right-[-10%] bottom-[-10%] md:right-[-5%] md:bottom-[-5%] w-[600px] h-[600px] opacity-20 pointer-events-none"
-                    data-oid="64-qurd"
-                >
-                    <div
-                        className="absolute w-[300px] h-[300px] rounded-full bg-gradient-to-br from-zinc-600 to-zinc-900 blur-sm"
-                        data-oid="3uak0vr"
-                    ></div>
-                    <div
-                        className="absolute left-[100px] top-[50px] w-[300px] h-[300px] rounded-full bg-gradient-to-br from-zinc-700 to-zinc-900 blur-sm"
-                        data-oid="wcwc09b"
-                    ></div>
-                </div>
+                {/* Removed the distracting semi-transparent white circles */}
             </section>
 
             {/* About Section */}
@@ -203,17 +355,17 @@ export default function Page() {
                             >
                                 The Studio
                             </h2>
-                            <p className="text-zinc-400 mb-6 font-light" data-oid="u29li6v">
+                            <p className="text-foreground mb-6 font-light" data-oid="u29li6v">
                                 HEB Studios Pte. Ltd. is a Singapore-based creative technology
                                 company specializing in building cutting-edge Web3 oriented projects
                                 and experiences.
                             </p>
-                            <p className="text-zinc-400 mb-6 font-light" data-oid="tnt1p6m">
+                            <p className="text-foreground mb-6 font-light" data-oid="tnt1p6m">
                                 We leverage AAA quality design, Unreal Engine 5, compelling
                                 storytelling, and immersive quality to create digital experiences
                                 that push boundaries and set new standards.
                             </p>
-                            <p className="text-zinc-400 font-light" data-oid="nghz5bn">
+                            <p className="text-foreground font-light" data-oid="nghz5bn">
                                 Our mission is to bridge the gap between traditional digital
                                 experiences and the emerging Web3 ecosystem, creating products that
                                 are not only technologically advanced but also accessible and
@@ -237,11 +389,7 @@ export default function Page() {
             </section>
 
             {/* Projects Section */}
-            <section
-                id="projects"
-                className="py-24 md:py-32 bg-zinc-900 relative"
-                data-oid=":w51yfz"
-            >
+            <section id="projects" className="py-24 md:py-32 bg-[#d7d3d1] relative" data-oid=":w51yfz">
                 <div
                     className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.05]"
                     data-oid="wqe-kog"
@@ -259,25 +407,59 @@ export default function Page() {
                         {projects.map((project) => (
                             <div
                                 key={project.id}
-                                className="group relative rounded-lg overflow-hidden bg-zinc-800 hover:bg-zinc-700 transition-all duration-300 h-[400px] cursor-pointer soft-shadow"
-                                onMouseEnter={() => setActiveProject(project.id)}
-                                onMouseLeave={() => setActiveProject(null)}
+                                className="group relative rounded-lg overflow-hidden bg-card hover:bg-black/10 transition-all duration-300 h-[400px] cursor-pointer soft-shadow"
+                                onMouseEnter={() => {
+                                    setActiveProject(project.id);
+                                    if (project.id === 'bananium') bananiumVideoRef.current?.play();
+                                    if (project.id === 'legend') legendVideoRef.current?.play();
+                                }}
+                                onMouseLeave={() => {
+                                    setActiveProject(null);
+                                    if (project.id === 'bananium') bananiumVideoRef.current?.pause();
+                                    if (project.id === 'legend') legendVideoRef.current?.pause();
+                                }}
                                 data-oid="83usrlc"
                             >
                                 <div
-                                    className="absolute inset-0 opacity-40 group-hover:opacity-30 transition-opacity"
+                                    className="absolute inset-0 opacity-85 group-hover:opacity-90 transition-opacity pointer-events-none"
                                     data-oid="4i4na6a"
                                 >
                                     <div
-                                        className="absolute inset-0 bg-gradient-to-t from-black to-transparent z-10"
+                                        className="absolute inset-0 bg-gradient-to-t from-white/70 via-white/40 to-transparent z-10 group-hover:from-white/80 group-hover:via-white/50 transition-all duration-300"
                                         data-oid="6nupe40"
                                     ></div>
-                                    <img
-                                        src={project.image}
-                                        alt={project.title}
-                                        className="w-full h-full object-cover"
-                                        data-oid=".ce2yxd"
-                                    />
+                                    {project.id === 'bananium' ? (
+                                        <video
+                                            ref={bananiumVideoRef}
+                                            src="/videos/banananna.mp4"
+                                            muted
+                                            loop
+                                            playsInline
+                                            preload="auto"
+                                            className="w-full h-full object-cover"
+                                            onMouseEnter={() => bananiumVideoRef.current?.play()}
+                                            onMouseLeave={() => bananiumVideoRef.current?.pause()}
+                                        />
+                                    ) : project.id === 'legend' ? (
+                                        <video
+                                            ref={legendVideoRef}
+                                            src="/videos/ml_teaser.mp4"
+                                            muted
+                                            loop
+                                            playsInline
+                                            preload="auto"
+                                            className="w-full h-full object-cover"
+                                            onMouseEnter={() => legendVideoRef.current?.play()}
+                                            onMouseLeave={() => legendVideoRef.current?.pause()}
+                                        />
+                                    ) : (
+                                        <img
+                                            src={project.image}
+                                            alt={project.title}
+                                            className="w-full h-full object-cover"
+                                            data-oid=".ce2yxd"
+                                        />
+                                    )}
                                 </div>
 
                                 <div
@@ -291,7 +473,7 @@ export default function Page() {
                                         {project.title}
                                     </h3>
                                     <p
-                                        className="text-zinc-400 mb-6 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                                        className="text-muted-foreground mb-6 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                                         data-oid=".3a4yzp"
                                     >
                                         {project.description}
@@ -300,18 +482,26 @@ export default function Page() {
                                         className="flex items-center space-x-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                                         data-oid="yvy71p9"
                                     >
-                                        <button
-                                            className="px-4 py-2 bg-zinc-700 hover:bg-zinc-600 rounded-full text-sm transition-colors"
-                                            data-oid="h600ff6"
-                                        >
-                                            View Project
-                                        </button>
-                                        <button
-                                            className="px-4 py-2 border border-zinc-600 rounded-full text-sm hover:bg-zinc-600 transition-colors"
-                                            data-oid="0hx8b5k"
-                                        >
-                                            Learn More
-                                        </button>
+                                        {project.id === 'bananium' ? (
+                                            <a
+                                                href="https://bananium.ai/"
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="px-4 py-2 border border-foreground rounded-full text-sm hover:bg-accent hover:text-accent-foreground transition-colors"
+                                            >
+                                                View Project
+                                            </a>
+                                        ) : (
+                                            <a
+                                                href="https://the-legend.io/"
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="px-4 py-2 border border-foreground rounded-full text-sm hover:bg-accent hover:text-accent-foreground transition-colors"
+                                                data-oid="h600ff6"
+                                            >
+                                                View Project
+                                            </a>
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -320,8 +510,141 @@ export default function Page() {
                 </div>
             </section>
 
+            {/* Team Section */}
+            <section id="team" className="py-24 md:py-32 bg-[#d7d3d1] relative">
+                <div
+                    className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.05]"
+                ></div>
+
+                <div className="max-w-7xl mx-auto px-6">
+                    <h2
+                        className="text-3xl md:text-4xl font-medium mb-16 font-montserrat"
+                    >
+                        Our Team
+                    </h2>
+
+                    <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+                        {/* Team Member 1 - Unreal Engine 5 */}
+                        <div
+                            className="bg-card p-8 rounded-lg hover:bg-muted transition-colors soft-shadow flex flex-col items-center text-center group"
+                        >
+                            <div className="w-32 h-32 mb-6 rounded-full overflow-hidden bg-muted flex items-center justify-center">
+                                {/* Abstract placeholder SVG for team member */}
+                                <svg viewBox="0 0 100 100" className="w-full h-full">
+                                    <defs>
+                                        <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+                                            <stop offset="0%" stopColor="#6a8494" />
+                                            <stop offset="100%" stopColor="#8ca3b4" />
+                                        </linearGradient>
+                                    </defs>
+                                    <circle cx="50" cy="40" r="25" fill="url(#grad1)" />
+                                    <path d="M50,75 Q20,60 20,95 L80,95 Q80,60 50,75" fill="url(#grad1)" />
+                                    <circle cx="35" cy="35" r="4" fill="#ffffff" fillOpacity="0.6" />
+                                </svg>
+                            </div>
+                            <h3
+                                className="text-xl font-semibold mb-2 font-montserrat"
+                            >
+                                Lead Developer
+                            </h3>
+                            <p className="text-muted-foreground font-light mb-4 group-hover:text-foreground transition-colors">
+                                Unreal Engine 5
+                            </p>
+                            <div className="w-12 h-1 bg-primary/30 rounded-full group-hover:bg-primary/60 transition-colors"></div>
+                        </div>
+
+                        {/* Team Member 2 - Motion Design */}
+                        <div
+                            className="bg-card p-8 rounded-lg hover:bg-muted transition-colors soft-shadow flex flex-col items-center text-center group"
+                        >
+                            <div className="w-32 h-32 mb-6 rounded-full overflow-hidden bg-muted flex items-center justify-center">
+                                {/* Abstract placeholder SVG for team member */}
+                                <svg viewBox="0 0 100 100" className="w-full h-full">
+                                    <defs>
+                                        <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="100%">
+                                            <stop offset="0%" stopColor="#7a8494" />
+                                            <stop offset="100%" stopColor="#9ca3b4" />
+                                        </linearGradient>
+                                    </defs>
+                                    <circle cx="50" cy="40" r="25" fill="url(#grad2)" />
+                                    <path d="M50,75 Q20,60 20,95 L80,95 Q80,60 50,75" fill="url(#grad2)" />
+                                    <rect x="40" y="30" width="20" height="10" rx="5" fill="#ffffff" fillOpacity="0.6" />
+                                </svg>
+                            </div>
+                            <h3
+                                className="text-xl font-semibold mb-2 font-montserrat"
+                            >
+                                Creative Director
+                            </h3>
+                            <p className="text-muted-foreground font-light mb-4 group-hover:text-foreground transition-colors">
+                                Motion Design
+                            </p>
+                            <div className="w-12 h-1 bg-primary/30 rounded-full group-hover:bg-primary/60 transition-colors"></div>
+                        </div>
+
+                        {/* Team Member 3 - Game Design */}
+                        <div
+                            className="bg-card p-8 rounded-lg hover:bg-muted transition-colors soft-shadow flex flex-col items-center text-center group"
+                        >
+                            <div className="w-32 h-32 mb-6 rounded-full overflow-hidden bg-muted flex items-center justify-center">
+                                {/* Abstract placeholder SVG for team member */}
+                                <svg viewBox="0 0 100 100" className="w-full h-full">
+                                    <defs>
+                                        <linearGradient id="grad3" x1="0%" y1="0%" x2="100%" y2="100%">
+                                            <stop offset="0%" stopColor="#8a7494" />
+                                            <stop offset="100%" stopColor="#ac93b4" />
+                                        </linearGradient>
+                                    </defs>
+                                    <circle cx="50" cy="40" r="25" fill="url(#grad3)" />
+                                    <path d="M50,75 Q20,60 20,95 L80,95 Q80,60 50,75" fill="url(#grad3)" />
+                                    <polygon points="40,30 60,30 50,45" fill="#ffffff" fillOpacity="0.6" />
+                                </svg>
+                            </div>
+                            <h3
+                                className="text-xl font-semibold mb-2 font-montserrat"
+                            >
+                                Game Designer
+                            </h3>
+                            <p className="text-muted-foreground font-light mb-4 group-hover:text-foreground transition-colors">
+                                Game Design
+                            </p>
+                            <div className="w-12 h-1 bg-primary/30 rounded-full group-hover:bg-primary/60 transition-colors"></div>
+                        </div>
+
+                        {/* Team Member 4 - Web3 Strategy & Tokenomics */}
+                        <div
+                            className="bg-card p-8 rounded-lg hover:bg-muted transition-colors soft-shadow flex flex-col items-center text-center group"
+                        >
+                            <div className="w-32 h-32 mb-6 rounded-full overflow-hidden bg-muted flex items-center justify-center">
+                                {/* Abstract placeholder SVG for team member */}
+                                <svg viewBox="0 0 100 100" className="w-full h-full">
+                                    <defs>
+                                        <linearGradient id="grad4" x1="0%" y1="0%" x2="100%" y2="100%">
+                                            <stop offset="0%" stopColor="#6a7484" />
+                                            <stop offset="100%" stopColor="#8c93a4" />
+                                        </linearGradient>
+                                    </defs>
+                                    <circle cx="50" cy="40" r="25" fill="url(#grad4)" />
+                                    <path d="M50,75 Q20,60 20,95 L80,95 Q80,60 50,75" fill="url(#grad4)" />
+                                    <circle cx="50" cy="35" r="10" fill="none" stroke="#ffffff" strokeWidth="2" strokeOpacity="0.6" />
+                                </svg>
+                            </div>
+                            <h3
+                                className="text-xl font-semibold mb-2 font-montserrat"
+                            >
+                                Blockchain Strategist
+                            </h3>
+                            <p className="text-muted-foreground font-light mb-4 group-hover:text-foreground transition-colors">
+                                Web3 Strategy & Tokenomics
+                            </p>
+                            <div className="w-12 h-1 bg-primary/30 rounded-full group-hover:bg-primary/60 transition-colors"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
             {/* Expertise Section */}
-            <section id="expertise" className="py-24 md:py-32 relative" data-oid="kctwt2e">
+            <section id="expertise" className="py-24 md:py-32 bg-[#d7d3d1] relative" data-oid="kctwt2e">
                 <div className="max-w-7xl mx-auto px-6" data-oid="-0k:_si">
                     <h2
                         className="text-3xl md:text-4xl font-medium mb-16 font-montserrat"
@@ -359,10 +682,13 @@ export default function Page() {
                         ].map((expertise, index) => (
                             <div
                                 key={index}
-                                className="bg-zinc-900 p-8 rounded-lg hover:bg-zinc-800 transition-colors soft-shadow"
+                                className="bg-card p-8 rounded-lg hover:bg-muted transition-colors soft-shadow"
                                 data-oid="k7963rf"
                             >
-                                <div className="text-3xl mb-4 text-zinc-500" data-oid="yi8nt9g">
+                                <div
+                                    className="text-3xl mb-4 text-muted-foreground"
+                                    data-oid="yi8nt9g"
+                                >
                                     {expertise.icon}
                                 </div>
                                 <h3
@@ -371,7 +697,7 @@ export default function Page() {
                                 >
                                     {expertise.title}
                                 </h3>
-                                <p className="text-zinc-400 font-light" data-oid="mxf2ai5">
+                                <p className="text-muted-foreground font-light" data-oid="mxf2ai5">
                                     {expertise.description}
                                 </p>
                             </div>
@@ -381,11 +707,7 @@ export default function Page() {
             </section>
 
             {/* Contact Section */}
-            <section
-                id="contact"
-                className="py-24 md:py-32 bg-zinc-900 relative"
-                data-oid="-nmovkb"
-            >
+            <section id="contact" className="py-24 md:py-32 bg-[#d7d3d1] relative" data-oid="-nmovkb">
                 <div
                     className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.05]"
                     data-oid="wrduul6"
@@ -400,23 +722,33 @@ export default function Page() {
                             >
                                 Get in Touch
                             </h2>
-                            <p className="text-zinc-400 mb-8 font-light" data-oid="z3xwyaq">
+                            <p className="text-muted-foreground mb-8 font-light" data-oid="z3xwyaq">
                                 Interested in working with us or learning more about our services?
                                 We'd love to hear from you.
                             </p>
 
                             <div className="space-y-4" data-oid="6e1mq1m">
                                 <div data-oid="e6rzcfd">
-                                    <h4 className="text-sm text-zinc-500 mb-1" data-oid=".w_99sp">
+                                    <h4
+                                        className="text-sm text-muted-foreground mb-1"
+                                        data-oid=".w_99sp"
+                                    >
                                         Email
                                     </h4>
-                                    <p data-oid="vt.kz1h">contact@hebstudios.com</p>
+                                    <p className="text-foreground" data-oid="vt.kz1h">
+                                        contact@hebstudios.com
+                                    </p>
                                 </div>
                                 <div data-oid="64gm9z3">
-                                    <h4 className="text-sm text-zinc-500 mb-1" data-oid=":pxyr6w">
+                                    <h4
+                                        className="text-sm text-muted-foreground mb-1"
+                                        data-oid=":pxyr6w"
+                                    >
                                         Location
                                     </h4>
-                                    <p data-oid="-_ml_9e">Singapore</p>
+                                    <p className="text-foreground" data-oid="-_ml_9e">
+                                        Singapore
+                                    </p>
                                 </div>
                             </div>
                         </div>
@@ -426,7 +758,7 @@ export default function Page() {
                                 <div data-oid="1s3oacy">
                                     <label
                                         htmlFor="name"
-                                        className="block text-sm text-zinc-500 mb-2"
+                                        className="block text-sm text-muted-foreground mb-2"
                                         data-oid="kh1ygn1"
                                     >
                                         Name
@@ -434,7 +766,7 @@ export default function Page() {
                                     <input
                                         type="text"
                                         id="name"
-                                        className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-zinc-600"
+                                        className="w-full bg-input border rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-ring"
                                         data-oid="ao06tg7"
                                     />
                                 </div>
@@ -442,7 +774,7 @@ export default function Page() {
                                 <div data-oid="vyydc0_">
                                     <label
                                         htmlFor="email"
-                                        className="block text-sm text-zinc-500 mb-2"
+                                        className="block text-sm text-muted-foreground mb-2"
                                         data-oid="r70j_x."
                                     >
                                         Email
@@ -450,7 +782,7 @@ export default function Page() {
                                     <input
                                         type="email"
                                         id="email"
-                                        className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-zinc-600"
+                                        className="w-full bg-input border rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-ring"
                                         data-oid="i_wutpk"
                                     />
                                 </div>
@@ -458,7 +790,7 @@ export default function Page() {
                                 <div data-oid=".-lcp21">
                                     <label
                                         htmlFor="message"
-                                        className="block text-sm text-zinc-500 mb-2"
+                                        className="block text-sm text-muted-foreground mb-2"
                                         data-oid="j.u1odx"
                                     >
                                         Message
@@ -466,13 +798,13 @@ export default function Page() {
                                     <textarea
                                         id="message"
                                         rows="4"
-                                        className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-zinc-600"
+                                        className="w-full bg-input border rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-ring"
                                         data-oid="osdc-hd"
                                     ></textarea>
                                 </div>
 
                                 <button
-                                    className="w-full px-6 py-3 bg-zinc-800 hover:bg-zinc-700 rounded-full transition-colors"
+                                    className="w-full px-6 py-3 bg-primary text-primary-foreground hover:bg-primary/90 rounded-full transition-colors"
                                     data-oid="ib-tqja"
                                 >
                                     Send Message
@@ -484,7 +816,7 @@ export default function Page() {
             </section>
 
             {/* Footer */}
-            <footer className="py-12 border-t border-zinc-800" data-oid="5az3i3m">
+            <footer className="py-12 border-t" data-oid="5az3i3m">
                 <div className="max-w-7xl mx-auto px-6" data-oid="7ncm7cg">
                     <div
                         className="flex flex-col md:flex-row justify-between items-center"
@@ -493,53 +825,54 @@ export default function Page() {
                         <div className="flex items-center mb-6 md:mb-0" data-oid="pk7vof2">
                             <div className="w-10 h-10 mr-3 relative" data-oid="zi4.7cq">
                                 <div
-                                    className="absolute inset-0 bg-zinc-800 rounded-full shadow-lg flex items-center justify-center"
+                                    className="flex items-center justify-center"
                                     data-oid="bnl_arf"
                                 >
-                                    <svg
-                                        viewBox="0 0 24 24"
-                                        className="w-6 h-6 text-zinc-400"
-                                        fill="currentColor"
+                                    <img
+                                        src="/images/elephant-logo.png"
+                                        alt="HEB Studios Logo"
+                                        className="w-10 h-10"
                                         data-oid="5e8v:up"
-                                    >
-                                        <path
-                                            d="M19.5,9.5c-0.5-2.5-2.3-4.6-4.5-5.6c-0.7-0.3-1.4-0.5-2.1-0.6c-0.4-0.1-0.9-0.1-1.3-0.1c-0.4,0-0.9,0-1.3,0.1 c-0.7,0.1-1.4,0.3-2.1,0.6C6.3,4.9,4.5,7,4,9.5C3.7,10.8,3.8,12.2,4.4,13.4c0.5,1.1,1.4,2,2.5,2.5c0.5,0.2,1.1,0.4,1.7,0.4 c0.3,0,0.7,0,1-0.1c0.3-0.1,0.6-0.2,0.9-0.4c0.3-0.2,0.5-0.4,0.7-0.7c0.2-0.3,0.3-0.6,0.3-0.9c0-0.3-0.1-0.6-0.3-0.9 c-0.2-0.3-0.4-0.5-0.7-0.7c-0.3-0.2-0.6-0.3-0.9-0.4c-0.3-0.1-0.7-0.1-1-0.1c-0.6,0-1.2,0.1-1.7,0.4c-1.1,0.5-2,1.4-2.5,2.5 c-0.6,1.2-0.7,2.6-0.4,3.9c0.5,2.5,2.3,4.6,4.5,5.6c0.7,0.3,1.4,0.5,2.1,0.6c0.4,0.1,0.9,0.1,1.3,0.1c0.4,0,0.9,0,1.3-0.1 c0.7-0.1,1.4-0.3,2.1-0.6c2.2-1,4-3.1,4.5-5.6c0.3-1.3,0.2-2.7-0.4-3.9c-0.5-1.1-1.4-2-2.5-2.5c-0.5-0.2-1.1-0.4-1.7-0.4 c-0.3,0-0.7,0-1,0.1c-0.3,0.1-0.6,0.2-0.9,0.4c-0.3,0.2-0.5,0.4-0.7,0.7c-0.2,0.3-0.3,0.6-0.3,0.9c0,0.3,0.1,0.6,0.3,0.9 c0.2,0.3,0.4,0.5,0.7,0.7c0.3,0.2,0.6,0.3,0.9,0.4c0.3,0.1,0.7,0.1,1,0.1c0.6,0,1.2-0.1,1.7-0.4c1.1-0.5,2-1.4,2.5-2.5 C20.2,12.2,20.3,10.8,19.5,9.5z"
-                                            data-oid="h7:kdg9"
-                                        />
-                                    </svg>
+                                    />
                                 </div>
                             </div>
-                            <div className="text-sm" data-oid="9vh74cb">
+                            <div className="text-sm text-foreground" data-oid="9vh74cb">
                                 HEB Studios Pte. Ltd.
                             </div>
                         </div>
 
-                        <div className="flex space-x-6 text-sm text-zinc-500" data-oid="x2nf_ix">
-                            <a
-                                href="#"
-                                className="hover:text-white transition-colors"
+                        <div
+                            className="flex space-x-6 text-sm text-muted-foreground"
+                            data-oid="x2nf_ix"
+                        >
+                            <button
+                                onClick={() => (window as any).__legalModals?.openPrivacyPolicy()}
+                                className="hover:text-foreground transition-colors"
                                 data-oid="w4u_:6e"
                             >
                                 Privacy Policy
-                            </a>
-                            <a
-                                href="#"
-                                className="hover:text-white transition-colors"
+                            </button>
+                            <button
+                                onClick={() => (window as any).__legalModals?.openTermsOfService()}
+                                className="hover:text-foreground transition-colors"
                                 data-oid="tgzu78b"
                             >
                                 Terms of Service
-                            </a>
+                            </button>
                             <a
                                 href="#"
-                                className="hover:text-white transition-colors"
+                                className="hover:text-foreground transition-colors"
                                 data-oid="h7ae:--"
                             >
-                                © 2023 HEB Studios
+                                © 2025 HEB Studios
                             </a>
                         </div>
                     </div>
                 </div>
             </footer>
+            
+            {/* Legal Modals */}
+            <LegalModals />
         </div>
     );
 }
