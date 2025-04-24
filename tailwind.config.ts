@@ -15,7 +15,7 @@ const config: Config = {
                     'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
             },
             fontFamily: {
-                sans: ['var(--font-inter)', 'sans-serif'],
+                sans: ['var(--font-dm-sans)', 'sans-serif'],
                 montserrat: ['var(--font-montserrat)', 'sans-serif'],
             },
             borderRadius: {
