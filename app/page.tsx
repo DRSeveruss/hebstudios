@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import Image from 'next/image';
 import LegalModals from '@/components/LegalModals';
 
 export default function Page() {
@@ -83,7 +84,7 @@ export default function Page() {
                 link.removeEventListener('click', handleNavClick as unknown as EventListener);
             });
         };
-    }); // Close the first useEffect hook
+    }, []); // Close the first useEffect hook with empty dependency array
 
 // IntersectionObserver for mobile autoplay
     useEffect(() => {
@@ -146,10 +147,12 @@ export default function Page() {
                     <div className="hidden" aria-hidden="true" data-oid="_:zmrc9"></div>
                     <a href="#" className="flex items-center relative z-10" data-oid="q_sn_rs">
                         {/* Logo */}
-                        <img
+                        <Image
                             src="/images/elephant-logo.png"
                             alt="HEB Studios Logo"
-                            className="w-12 h-12 mr-4"
+                            width={48}
+                            height={48}
+                            className="mr-4"
                             data-oid="bq6h59y"
                         />
 
@@ -378,10 +381,11 @@ export default function Page() {
                             className="relative h-[400px] rounded-lg overflow-hidden"
                             data-oid="3_ofwu9"
                         >
-                            <img
+                            <Image
                                 src="/images/2-balls.png"
                                 alt="Abstract two-ball graphic"
-                                className="w-full h-full object-cover"
+                                fill
+                                className="object-cover"
                                 data-oid="dk_etqf"
                             />
                         </div>
@@ -454,10 +458,11 @@ export default function Page() {
                                             onMouseLeave={() => legendVideoRef.current?.pause()}
                                         />
                                     ) : (
-                                        <img
+                                        <Image
                                             src={project.image}
                                             alt={project.title}
-                                            className="w-full h-full object-cover"
+                                            fill
+                                            className="object-cover"
                                             data-oid=".ce2yxd"
                                         />
                                     )}
@@ -725,7 +730,7 @@ export default function Page() {
                             </h2>
                             <p className="text-muted-foreground mb-8 font-light" data-oid="z3xwyaq">
                                 Interested in working with us or learning more about our services?
-                                We'd love to hear from you.
+                                We&apos;d love to hear from you.
                             </p>
 
                             <div className="space-y-4" data-oid="6e1mq1m">
@@ -829,10 +834,11 @@ export default function Page() {
                                     className="flex items-center justify-center"
                                     data-oid="bnl_arf"
                                 >
-                                    <img
+                                    <Image
                                         src="/images/elephant-logo.png"
                                         alt="HEB Studios Logo"
-                                        className="w-10 h-10"
+                                        width={40}
+                                        height={40}
                                         data-oid="5e8v:up"
                                     />
                                 </div>
