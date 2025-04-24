@@ -61,7 +61,12 @@ export default function Page() {
                     !mobileMenu.contains(event.target as Node) &&
                     !hamburgerButton.contains(event.target as Node)
                 ) {
-                    mobileMenu.classList.add('hidden');
+                    // Hide menu with animation
+                    mobileMenu.style.maxHeight = '0';
+                    // Wait for animation to complete before hiding
+                    setTimeout(() => {
+                        mobileMenu.classList.add('hidden');
+                    }, 300);
                 }
             }
         };
@@ -209,7 +214,21 @@ export default function Page() {
                         onClick={() => {
                             const mobileMenu = document.getElementById('mobile-menu');
                             if (mobileMenu) {
-                                mobileMenu.classList.toggle('hidden');
+                                if (mobileMenu.classList.contains('hidden')) {
+                                    // Show menu with animation
+                                    mobileMenu.classList.remove('hidden');
+                                    // Use setTimeout to ensure the transition happens after display change
+                                    setTimeout(() => {
+                                        mobileMenu.style.maxHeight = '300px'; // Adjust based on content height
+                                    }, 10);
+                                } else {
+                                    // Hide menu with animation
+                                    mobileMenu.style.maxHeight = '0';
+                                    // Wait for animation to complete before hiding
+                                    setTimeout(() => {
+                                        mobileMenu.classList.add('hidden');
+                                    }, 300);
+                                }
                             }
                         }}
                         aria-label="Toggle mobile menu"
@@ -222,16 +241,26 @@ export default function Page() {
                 {/* Mobile Menu */}
                 <div
                     id="mobile-menu"
-                    className="hidden absolute top-20 left-0 right-0 bg-muted rounded-lg mx-4 p-4 shadow-lg z-40"
+                    className="hidden absolute top-[calc(4rem+2rem)] left-0 right-0 bg-muted rounded-2xl mx-auto w-[16rem] p-6 shadow-lg z-40"
+                    style={{
+                        transition: "max-height 0.3s ease",
+                        maxHeight: "0",
+                        overflow: "hidden"
+                    }}
                 >
-                    <div className="flex flex-col space-y-4 text-sm font-medium">
+                    <div className="flex flex-col space-y-4 text-sm font-medium text-center">
                         <a
                             href="#about"
                             className="hover:text-foreground transition-colors py-2"
                             onClick={() => {
                                 const mobileMenu = document.getElementById('mobile-menu');
                                 if (mobileMenu) {
-                                    mobileMenu.classList.add('hidden');
+                                    // Hide menu with animation
+                                    mobileMenu.style.maxHeight = '0';
+                                    // Wait for animation to complete before hiding
+                                    setTimeout(() => {
+                                        mobileMenu.classList.add('hidden');
+                                    }, 300);
                                 }
                             }}
                         >
@@ -243,7 +272,12 @@ export default function Page() {
                             onClick={() => {
                                 const mobileMenu = document.getElementById('mobile-menu');
                                 if (mobileMenu) {
-                                    mobileMenu.classList.add('hidden');
+                                    // Hide menu with animation
+                                    mobileMenu.style.maxHeight = '0';
+                                    // Wait for animation to complete before hiding
+                                    setTimeout(() => {
+                                        mobileMenu.classList.add('hidden');
+                                    }, 300);
                                 }
                             }}
                         >
@@ -255,7 +289,12 @@ export default function Page() {
                             onClick={() => {
                                 const mobileMenu = document.getElementById('mobile-menu');
                                 if (mobileMenu) {
-                                    mobileMenu.classList.add('hidden');
+                                    // Hide menu with animation
+                                    mobileMenu.style.maxHeight = '0';
+                                    // Wait for animation to complete before hiding
+                                    setTimeout(() => {
+                                        mobileMenu.classList.add('hidden');
+                                    }, 300);
                                 }
                             }}
                         >
@@ -267,7 +306,12 @@ export default function Page() {
                             onClick={() => {
                                 const mobileMenu = document.getElementById('mobile-menu');
                                 if (mobileMenu) {
-                                    mobileMenu.classList.add('hidden');
+                                    // Hide menu with animation
+                                    mobileMenu.style.maxHeight = '0';
+                                    // Wait for animation to complete before hiding
+                                    setTimeout(() => {
+                                        mobileMenu.classList.add('hidden');
+                                    }, 300);
                                 }
                             }}
                         >
@@ -275,11 +319,16 @@ export default function Page() {
                         </a>
                         <a
                             href="#contact"
-                            className="px-5 py-2 border border-foreground text-foreground rounded-full text-sm hover:bg-muted transition-colors"
+                            className="px-5 py-2 border border-foreground text-foreground rounded-full text-sm hover:bg-muted transition-colors mx-auto inline-block"
                             onClick={() => {
                                 const mobileMenu = document.getElementById('mobile-menu');
                                 if (mobileMenu) {
-                                    mobileMenu.classList.add('hidden');
+                                    // Hide menu with animation
+                                    mobileMenu.style.maxHeight = '0';
+                                    // Wait for animation to complete before hiding
+                                    setTimeout(() => {
+                                        mobileMenu.classList.add('hidden');
+                                    }, 300);
                                 }
                             }}
                         >
