@@ -7,6 +7,7 @@ import LegalModals from '@/components/LegalModals';
 export default function Page() {
     const [isLoaded, setIsLoaded] = useState(false);
     const [activeProject, setActiveProject] = useState(null);
+    const [expandedProjects, setExpandedProjects] = useState<string[]>([]);
     const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
     const heroRef = useRef<HTMLElement>(null); // Ref for the hero section
     const bananiumVideoRef = useRef<HTMLVideoElement>(null); // Ref for bananium video
@@ -412,7 +413,17 @@ export default function Page() {
                         {projects.map((project) => (
                             <div
                                 key={project.id}
-                                className="group relative rounded-lg overflow-hidden bg-card hover:bg-black/10 transition-all duration-300 h-[400px] cursor-pointer soft-shadow"
+                                className={`group relative rounded-lg overflow-hidden bg-card hover:bg-black/10 transition-all duration-300 h-[400px] cursor-pointer soft-shadow ${
+                                    expandedProjects.includes(project.id) ? 'mobile-expanded' : ''
+                                }`}
+                                onClick={() => {
+                                    // Toggle expanded state for mobile
+                                    setExpandedProjects(prev =>
+                                        prev.includes(project.id)
+                                            ? prev.filter(id => id !== project.id)
+                                            : [...prev, project.id]
+                                    );
+                                }}
                                 onMouseEnter={() => {
                                     setActiveProject(project.id);
                                     if (project.id === 'bananium') bananiumVideoRef.current?.play();
@@ -472,20 +483,52 @@ export default function Page() {
                                     className="absolute inset-0 flex flex-col justify-end p-8 z-20"
                                     data-oid="pvjn_nq"
                                 >
+                                    {/* Title always visible at bottom */}
                                     <h3
-                                        className="text-2xl font-semibold mb-3 font-montserrat"
+                                        className="text-2xl font-semibold font-montserrat"
                                         data-oid="rpm9:iz"
                                     >
                                         {project.title}
                                     </h3>
-                                    <p
-                                        className="text-muted-foreground mb-6 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                                        data-oid=".3a4yzp"
-                                    >
-                                        {project.description}
-                                    </p>
+                                    
+                                    {/* Content that shows/hides - mobile: toggle, desktop: hover */}
+                                    <div className={`overflow-hidden transition-all duration-300 ${
+                                        expandedProjects.includes(project.id) ? 'max-h-[200px] mt-3' : 'max-h-0 mt-0'
+                                    } md:group-hover:max-h-[200px] md:group-hover:mt-3`}>
+                                        <p
+                                            className="text-muted-foreground mb-4"
+                                            data-oid=".3a4yzp"
+                                        >
+                                            {project.description}
+                                        </p>
+                                        
+                                        {/* Mobile view button */}
+                                        <div className="md:hidden flex">
+                                            {project.id === 'bananium' ? (
+                                                <a
+                                                    href="https://bananium.ai/"
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="px-4 py-2 border border-foreground rounded-full text-sm hover:bg-accent hover:text-accent-foreground transition-colors"
+                                                >
+                                                    View Project
+                                                </a>
+                                            ) : (
+                                                <a
+                                                    href="https://the-legend.io/"
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="px-4 py-2 border border-foreground rounded-full text-sm hover:bg-accent hover:text-accent-foreground transition-colors"
+                                                >
+                                                    View Project
+                                                </a>
+                                            )}
+                                        </div>
+                                    </div>
+                                    
+                                    {/* Desktop view: Show on hover */}
                                     <div
-                                        className="flex items-center space-x-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                                        className="hidden md:flex items-center space-x-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 mt-4"
                                         data-oid="yvy71p9"
                                     >
                                         {project.id === 'bananium' ? (

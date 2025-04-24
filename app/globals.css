@@ -40,6 +40,36 @@
     .soft-glow {
         filter: drop-shadow(0 0 8px hsla(var(--accent), 0.5));
     }
+    
+    /* Mobile project card toggle functionality */
+    @media (max-width: 767px) {
+        /* Hide hover effects on mobile */
+        .group:hover p,
+        .group:hover div[data-oid="yvy71p9"] {
+            opacity: 0 !important;
+        }
+        
+        /* Show content when mobile-expanded class is present */
+        .mobile-expanded p[data-oid=".3a4yzp"],
+        .mobile-expanded div[data-oid="yvy71p9"] {
+            opacity: 1 !important;
+            visibility: visible !important;
+            display: flex !important;
+        }
+        
+        /* Ensure buttons inside the project cards are visible when expanded */
+        .mobile-expanded div[data-oid="yvy71p9"] a {
+            display: inline-block !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+            pointer-events: auto !important;
+            border: 1px solid var(--foreground) !important;
+            padding: 0.5rem 1rem !important;
+            border-radius: 9999px !important;
+            font-size: 0.875rem !important;
+            transition: all 0.2s !important;
+        }
+    }
 }
 
 @layer base {
