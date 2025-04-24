@@ -1,9 +1,13 @@
 import path from 'path';
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'export',
-  basePath: '/hebstudios',
-  assetPrefix: '/hebstudios/',
+  // Only apply these settings for production builds (GitHub Pages), not for local development
+  ...(process.env.NODE_ENV === 'production' ? {
+    output: 'export',
+    basePath: '/hebstudios',
+    assetPrefix: '/hebstudios/',
+  } : {}),
+  
   images: {
     unoptimized: true,
   },

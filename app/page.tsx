@@ -83,6 +83,8 @@ export default function Page() {
                 link.removeEventListener('click', handleNavClick as unknown as EventListener);
             });
         };
+    }); // Close the first useEffect hook
+
 // IntersectionObserver for mobile autoplay
     useEffect(() => {
         const videos = [bananiumVideoRef.current, legendVideoRef.current];
