@@ -70,6 +70,7 @@
             transition: all 0.2s !important;
         }
     }
+/* Explicit hover styles for pitch deck button (Removed) */
 }
 
 @layer base {

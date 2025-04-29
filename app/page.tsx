@@ -6,10 +6,13 @@ import LegalModals from '@/components/LegalModals';
 
 export default function Page() {
     const [isLoaded, setIsLoaded] = useState(false);
-    const [activeProject, setActiveProject] = useState(null);
-    const [expandedProjects, setExpandedProjects] = useState<string[]>([]);
+    const [activeProject, setActiveProject] = useState<string | null>(null); // Keep for hover logic, maybe rename
+    const [hoveredProject, setHoveredProject] = useState<string | null>(null); // Explicit state for desktop hover
+    const [expandedProjects, setExpandedProjects] = useState<string[]>([]); // Keep for mobile tap
+    const [isProjectsVisible, setIsProjectsVisible] = useState(false); // Track section visibility for desktop autoplay
     const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
     const heroRef = useRef<HTMLElement>(null); // Ref for the hero section
+    const projectsSectionRef = useRef<HTMLElement>(null); // Ref for the projects section
     const bananiumVideoRef = useRef<HTMLVideoElement>(null); // Ref for bananium video
     const legendVideoRef = useRef<HTMLVideoElement>(null); // Ref for legend video
 
@@ -90,27 +93,111 @@ export default function Page() {
                 link.removeEventListener('click', handleNavClick as unknown as EventListener);
             });
         };
-    }, []); // Close the first useEffect hook with empty dependency array
+    }, []);
 
-// IntersectionObserver for mobile autoplay
+    // Mobile-only IntersectionObserver for individual video autoplay (Replaces the original one)
     useEffect(() => {
         const videos = [bananiumVideoRef.current, legendVideoRef.current];
-        videos.forEach(video => {
-            if (!video) return;
-            const observer = new IntersectionObserver(
-                ([entry]) => {
-                    if (entry.isIntersecting && entry.intersectionRatio === 1) {
-                        video.play();
+        let observers: IntersectionObserver[] = []; // Use let for reassignment
+
+        const setupMobileObservers = () => {
+            // Clear existing observers first
+            observers.forEach(obs => obs.disconnect());
+            observers = []; // Reset the array
+
+            const isMobile = window.innerWidth < 768;
+            if (isMobile) {
+                videos.forEach(video => {
+                    if (!video) return;
+                    const observer = new IntersectionObserver(
+                        ([entry]) => {
+                            // Double-check if still mobile during callback
+                            if (window.innerWidth < 768) {
+                                if (entry.isIntersecting && entry.intersectionRatio === 1) {
+                                    video.play().catch(e => console.error("Mobile autoplay failed:", e));
+                                } else {
+                                    video.pause();
+                                }
+                            }
+                        },
+                        { threshold: 1.0 }
+                    );
+                    observer.observe(video);
+                    observers.push(observer); // Add the new observer
+                });
+            }
+            // No else needed: if not mobile, observers array remains empty or cleared
+        };
+
+        // Initial setup
+        setupMobileObservers();
+
+        // Add resize listener
+        window.addEventListener('resize', setupMobileObservers);
+
+        // Cleanup function
+        return () => {
+            observers.forEach(obs => obs.disconnect()); // Disconnect all active observers
+            window.removeEventListener('resize', setupMobileObservers); // Remove listener
+        };
+    }, []); // Empty dependency array ensures this runs once on mount, resize handles updates
+
+    // IntersectionObserver for Projects Section (Desktop Autoplay)
+    useEffect(() => {
+        const section = projectsSectionRef.current;
+        if (!section) return;
+
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                // Check screen width - only apply desktop logic if wider than md breakpoint (e.g., 768px)
+                const isDesktop = window.innerWidth >= 768;
+                if (isDesktop) {
+                    setIsProjectsVisible(entry.isIntersecting);
+                    if (entry.isIntersecting) {
+                        // Play both videos only if not currently hovered
+                        if (!hoveredProject) {
+                            bananiumVideoRef.current?.play();
+                            legendVideoRef.current?.play();
+                        }
                     } else {
-                        video.pause();
+                        // Pause both videos when section scrolls out
+                        bananiumVideoRef.current?.pause();
+                        legendVideoRef.current?.pause();
                     }
-                },
-                { threshold: 1.0 }
-            );
-            observer.observe(video);
-            return () => observer.disconnect();
-        });
-    }, []);
+                } else {
+                     // Ensure visibility state is false on mobile if observer triggers
+                    setIsProjectsVisible(false);
+                }
+            },
+            { threshold: 0.1 } // Trigger when 10% is visible
+        );
+
+        observer.observe(section);
+
+        // Also check initial state on load for desktop
+        const checkInitialVisibility = () => {
+            const isDesktop = window.innerWidth >= 768;
+            if (isDesktop && section) {
+                const rect = section.getBoundingClientRect();
+                const isVisible = rect.top < window.innerHeight && rect.bottom >= 0;
+                 setIsProjectsVisible(isVisible);
+                 if (isVisible && !hoveredProject) {
+                     bananiumVideoRef.current?.play().catch(e => console.error("Autoplay failed:", e));
+                     legendVideoRef.current?.play().catch(e => console.error("Autoplay failed:", e));
+                 }
+            }
+        };
+
+        // Check visibility on load and resize
+        checkInitialVisibility();
+        window.addEventListener('resize', checkInitialVisibility);
+
+
+        return () => {
+            observer.disconnect();
+            window.removeEventListener('resize', checkInitialVisibility);
+        }
+    }, [hoveredProject]); // Re-run observer logic if hover state changes
 
     const projects = [
         {
@@ -443,10 +530,10 @@ export default function Page() {
                 </div>
             </section>
 
-            {/* Projects Section */}
-            <section id="projects" className="py-24 md:py-32 bg-[#d7d3d1] relative" data-oid=":w51yfz">
+            {/* Projects Section - Add ref here */}
+            <section ref={projectsSectionRef} id="projects" className="py-24 md:py-32 bg-[#d7d3d1] relative" data-oid=":w51yfz">
                 <div
-                    className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.05]"
+                    className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.05] pointer-events-none" // Added pointer-events-none
                     data-oid="wqe-kog"
                 ></div>
 
@@ -466,31 +553,54 @@ export default function Page() {
                                     expandedProjects.includes(project.id) ? 'mobile-expanded' : ''
                                 }`}
                                 onClick={() => {
-                                    // Toggle expanded state for mobile
-                                    setExpandedProjects(prev =>
-                                        prev.includes(project.id)
-                                            ? prev.filter(id => id !== project.id)
-                                            : [...prev, project.id]
-                                    );
+                                    // Only handle tap on mobile
+                                    if (window.innerWidth < 768) {
+                                        // Toggle expanded state for mobile
+                                        setExpandedProjects(prev =>
+                                            prev.includes(project.id)
+                                                ? prev.filter(id => id !== project.id)
+                                                : [...prev, project.id]
+                                        );
+                                    }
                                 }}
                                 onMouseEnter={() => {
+                                    // Only handle hover on desktop
+                                    if (window.innerWidth >= 768) {
+                                        setHoveredProject(project.id);
+                                        // Pause the specific video being hovered
+                                        if (project.id === 'bananium') bananiumVideoRef.current?.pause();
+                                        if (project.id === 'legend') legendVideoRef.current?.pause();
+                                    }
+                                    // Keep setActiveProject for potential other uses or remove if unused
                                     setActiveProject(project.id);
-                                    if (project.id === 'bananium') bananiumVideoRef.current?.play();
-                                    if (project.id === 'legend') legendVideoRef.current?.play();
                                 }}
                                 onMouseLeave={() => {
+                                    // Only handle hover on desktop
+                                    if (window.innerWidth >= 768) {
+                                        setHoveredProject(null);
+                                        // Resume playing ONLY if the section is still visible
+                                        if (isProjectsVisible) {
+                                            if (project.id === 'bananium') bananiumVideoRef.current?.play();
+                                            if (project.id === 'legend') legendVideoRef.current?.play();
+                                        }
+                                    }
+                                     // Keep setActiveProject for potential other uses or remove if unused
                                     setActiveProject(null);
-                                    if (project.id === 'bananium') bananiumVideoRef.current?.pause();
-                                    if (project.id === 'legend') legendVideoRef.current?.pause();
                                 }}
                                 data-oid="83usrlc"
                             >
+                                {/* Video and Overlay Container */}
                                 <div
-                                    className="absolute inset-0 opacity-85 group-hover:opacity-90 transition-opacity pointer-events-none"
+                                    className="absolute inset-0 transition-opacity duration-300 pointer-events-none" // Removed opacity classes here
                                     data-oid="4i4na6a"
                                 >
+                                    {/* Gradient Overlay - Opacity changes based on state */}
                                     <div
-                                        className="absolute inset-0 bg-gradient-to-t from-white/70 via-white/40 to-transparent z-10 group-hover:from-white/80 group-hover:via-white/50 transition-all duration-300"
+                                        className={`absolute inset-0 z-10 transition-all duration-300 ${
+                                            (expandedProjects.includes(project.id) || hoveredProject === project.id)
+                                                ? 'bg-gradient-to-t from-white/80 via-white/50 to-transparent' // Stronger overlay when text visible
+                                                : 'bg-gradient-to-t from-white/30 via-white/10 to-transparent' // Weaker overlay when playing
+                                        }`}
                                         data-oid="6nupe40"
                                     ></div>
                                     {project.id === 'bananium' ? (
@@ -502,8 +612,7 @@ export default function Page() {
                                             playsInline
                                             preload="auto"
                                             className="w-full h-full object-cover"
-                                            onMouseEnter={() => bananiumVideoRef.current?.play()}
-                                            onMouseLeave={() => bananiumVideoRef.current?.pause()}
+                                            // Remove direct video hover handlers
                                         />
                                     ) : project.id === 'legend' ? (
                                         <video
@@ -514,8 +623,7 @@ export default function Page() {
                                             playsInline
                                             preload="auto"
                                             className="w-full h-full object-cover"
-                                            onMouseEnter={() => legendVideoRef.current?.play()}
-                                            onMouseLeave={() => legendVideoRef.current?.pause()}
+                                            // Remove direct video hover handlers
                                         />
                                     ) : (
                                         <Image
@@ -540,25 +648,34 @@ export default function Page() {
                                         {project.title}
                                     </h3>
                                     
-                                    {/* Content that shows/hides - mobile: toggle, desktop: hover */}
-                                    <div className={`overflow-hidden transition-all duration-300 ${
-                                        expandedProjects.includes(project.id) ? 'max-h-[200px] mt-3' : 'max-h-0 mt-0'
-                                    } md:group-hover:max-h-[200px] md:group-hover:mt-3`}>
+                                    {/* Content that shows/hides based on state */}
+                                    <div className={`overflow-hidden transition-all duration-500 ease-out ${
+                                        // Mobile Tapped State
+                                        (expandedProjects.includes(project.id))
+                                            ? 'max-h-[200px] opacity-100 mt-3'
+                                        // Desktop Hovered State
+                                        : (hoveredProject === project.id)
+                                            ? 'md:max-h-[200px] md:opacity-100 md:mt-3 max-h-0 opacity-0 mt-0' // Apply desktop styles, ensure hidden on mobile unless tapped
+                                        // Default Hidden State
+                                        : 'max-h-0 opacity-0 mt-0'
+                                    }`}>
                                         <p
-                                            className="text-muted-foreground mb-4"
+                                            className="text-foreground mb-4" // Use foreground for better contrast on overlay
                                             data-oid=".3a4yzp"
                                         >
                                             {project.description}
                                         </p>
                                         
-                                        {/* Mobile view button */}
-                                        <div className="md:hidden flex">
+                                        {/* Button - visible when container is expanded */}
+                                        <div className="flex">
                                             {project.id === 'bananium' ? (
                                                 <a
                                                     href="https://bananium.ai/"
                                                     target="_blank"
                                                     rel="noopener noreferrer"
                                                     className="px-4 py-2 border border-foreground rounded-full text-sm hover:bg-accent hover:text-accent-foreground transition-colors"
+                                                    // Prevent click propagation to parent div only on desktop
+                                                    onClick={(e) => { if (window.innerWidth >= 768) e.stopPropagation(); }}
                                                 >
                                                     View Project
                                                 </a>
@@ -568,39 +685,15 @@ export default function Page() {
                                                     target="_blank"
                                                     rel="noopener noreferrer"
                                                     className="px-4 py-2 border border-foreground rounded-full text-sm hover:bg-accent hover:text-accent-foreground transition-colors"
+                                                    // Prevent click propagation to parent div only on desktop
+                                                    onClick={(e) => { if (window.innerWidth >= 768) e.stopPropagation(); }}
                                                 >
                                                     View Project
                                                 </a>
                                             )}
                                         </div>
                                     </div>
-                                    
-                                    {/* Desktop view: Show on hover */}
-                                    <div
-                                        className="hidden md:flex items-center space-x-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 mt-4"
-                                        data-oid="yvy71p9"
-                                    >
-                                        {project.id === 'bananium' ? (
-                                            <a
-                                                href="https://bananium.ai/"
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="px-4 py-2 border border-foreground rounded-full text-sm hover:bg-accent hover:text-accent-foreground transition-colors"
-                                            >
-                                                View Project
-                                            </a>
-                                        ) : (
-                                            <a
-                                                href="https://the-legend.io/"
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="px-4 py-2 border border-foreground rounded-full text-sm hover:bg-accent hover:text-accent-foreground transition-colors"
-                                                data-oid="h600ff6"
-                                            >
-                                                View Project
-                                            </a>
-                                        )}
-                                    </div>
+                                    {/* Removed redundant desktop-only div */}
                                 </div>
                             </div>
                         ))}
@@ -626,27 +719,21 @@ export default function Page() {
                         <div
                             className="bg-card p-8 rounded-lg hover:bg-muted transition-colors soft-shadow flex flex-col items-center text-center group"
                         >
-                            <div className="w-32 h-32 mb-6 rounded-full overflow-hidden bg-muted flex items-center justify-center">
-                                {/* Abstract placeholder SVG for team member */}
-                                <svg viewBox="0 0 100 100" className="w-full h-full">
-                                    <defs>
-                                        <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
-                                            <stop offset="0%" stopColor="#6a8494" />
-                                            <stop offset="100%" stopColor="#8ca3b4" />
-                                        </linearGradient>
-                                    </defs>
-                                    <circle cx="50" cy="40" r="25" fill="url(#grad1)" />
-                                    <path d="M50,75 Q20,60 20,95 L80,95 Q80,60 50,75" fill="url(#grad1)" />
-                                    <circle cx="35" cy="35" r="4" fill="#ffffff" fillOpacity="0.6" />
-                                </svg>
+                            <div className="w-32 h-32 mb-6 rounded-full overflow-hidden bg-muted flex items-center justify-center relative">
+                                <Image
+                                    src="/images/solaris.png"
+                                    alt={'Khalid "Solaris"'} // Corrected alt attribute using template literal
+                                    fill
+                                    className="object-cover"
+                                />
                             </div>
                             <h3
                                 className="text-xl font-semibold mb-2 font-montserrat"
                             >
-                                Lead Developer
+                                Khalid "Solaris"
                             </h3>
                             <p className="text-muted-foreground font-light mb-4 group-hover:text-foreground transition-colors">
-                                Unreal Engine 5
+                                Operations Director & Studio Lead | Finance + UE5 Expert
                             </p>
                             <div className="w-12 h-1 bg-primary/30 rounded-full group-hover:bg-primary/60 transition-colors"></div>
                         </div>
@@ -655,27 +742,21 @@ export default function Page() {
                         <div
                             className="bg-card p-8 rounded-lg hover:bg-muted transition-colors soft-shadow flex flex-col items-center text-center group"
                         >
-                            <div className="w-32 h-32 mb-6 rounded-full overflow-hidden bg-muted flex items-center justify-center">
-                                {/* Abstract placeholder SVG for team member */}
-                                <svg viewBox="0 0 100 100" className="w-full h-full">
-                                    <defs>
-                                        <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="100%">
-                                            <stop offset="0%" stopColor="#7a8494" />
-                                            <stop offset="100%" stopColor="#9ca3b4" />
-                                        </linearGradient>
-                                    </defs>
-                                    <circle cx="50" cy="40" r="25" fill="url(#grad2)" />
-                                    <path d="M50,75 Q20,60 20,95 L80,95 Q80,60 50,75" fill="url(#grad2)" />
-                                    <rect x="40" y="30" width="20" height="10" rx="5" fill="#ffffff" fillOpacity="0.6" />
-                                </svg>
+                            <div className="w-32 h-32 mb-6 rounded-full overflow-hidden bg-muted flex items-center justify-center relative">
+                                <Image
+                                    src="/images/max.png"
+                                    alt="Max"
+                                    fill
+                                    className="object-cover"
+                                />
                             </div>
                             <h3
                                 className="text-xl font-semibold mb-2 font-montserrat"
                             >
-                                Creative Director
+                                Max
                             </h3>
                             <p className="text-muted-foreground font-light mb-4 group-hover:text-foreground transition-colors">
-                                Motion Design
+                                Brand & Growth Director | UE5 Creator + Strategy
                             </p>
                             <div className="w-12 h-1 bg-primary/30 rounded-full group-hover:bg-primary/60 transition-colors"></div>
                         </div>
@@ -684,27 +765,21 @@ export default function Page() {
                         <div
                             className="bg-card p-8 rounded-lg hover:bg-muted transition-colors soft-shadow flex flex-col items-center text-center group"
                         >
-                            <div className="w-32 h-32 mb-6 rounded-full overflow-hidden bg-muted flex items-center justify-center">
-                                {/* Abstract placeholder SVG for team member */}
-                                <svg viewBox="0 0 100 100" className="w-full h-full">
-                                    <defs>
-                                        <linearGradient id="grad3" x1="0%" y1="0%" x2="100%" y2="100%">
-                                            <stop offset="0%" stopColor="#8a7494" />
-                                            <stop offset="100%" stopColor="#ac93b4" />
-                                        </linearGradient>
-                                    </defs>
-                                    <circle cx="50" cy="40" r="25" fill="url(#grad3)" />
-                                    <path d="M50,75 Q20,60 20,95 L80,95 Q80,60 50,75" fill="url(#grad3)" />
-                                    <polygon points="40,30 60,30 50,45" fill="#ffffff" fillOpacity="0.6" />
-                                </svg>
+                            <div className="w-32 h-32 mb-6 rounded-full overflow-hidden bg-muted flex items-center justify-center relative">
+                                <Image
+                                    src="/images/hando.png"
+                                    alt="Hando"
+                                    fill
+                                    className="object-cover"
+                                />
                             </div>
                             <h3
                                 className="text-xl font-semibold mb-2 font-montserrat"
                             >
-                                Game Designer
+                                Hando
                             </h3>
                             <p className="text-muted-foreground font-light mb-4 group-hover:text-foreground transition-colors">
-                                Game Design
+                                Technical Director | Web3 + Full-Stack Dev
                             </p>
                             <div className="w-12 h-1 bg-primary/30 rounded-full group-hover:bg-primary/60 transition-colors"></div>
                         </div>
@@ -713,27 +788,21 @@ export default function Page() {
                         <div
                             className="bg-card p-8 rounded-lg hover:bg-muted transition-colors soft-shadow flex flex-col items-center text-center group"
                         >
-                            <div className="w-32 h-32 mb-6 rounded-full overflow-hidden bg-muted flex items-center justify-center">
-                                {/* Abstract placeholder SVG for team member */}
-                                <svg viewBox="0 0 100 100" className="w-full h-full">
-                                    <defs>
-                                        <linearGradient id="grad4" x1="0%" y1="0%" x2="100%" y2="100%">
-                                            <stop offset="0%" stopColor="#6a7484" />
-                                            <stop offset="100%" stopColor="#8c93a4" />
-                                        </linearGradient>
-                                    </defs>
-                                    <circle cx="50" cy="40" r="25" fill="url(#grad4)" />
-                                    <path d="M50,75 Q20,60 20,95 L80,95 Q80,60 50,75" fill="url(#grad4)" />
-                                    <circle cx="50" cy="35" r="10" fill="none" stroke="#ffffff" strokeWidth="2" strokeOpacity="0.6" />
-                                </svg>
+                            <div className="w-32 h-32 mb-6 rounded-full overflow-hidden bg-muted flex items-center justify-center relative">
+                                <Image
+                                    src="/images/drseverus.png"
+                                    alt="DRSeverus"
+                                    fill
+                                    className="object-cover"
+                                />
                             </div>
                             <h3
                                 className="text-xl font-semibold mb-2 font-montserrat"
                             >
-                                Blockchain Strategist
+                                DRSeverus
                             </h3>
                             <p className="text-muted-foreground font-light mb-4 group-hover:text-foreground transition-colors">
-                                Web3 Strategy & Tokenomics
+                                Blockchain Strategist | Product + Operations
                             </p>
                             <div className="w-12 h-1 bg-primary/30 rounded-full group-hover:bg-primary/60 transition-colors"></div>
                         </div>
@@ -804,110 +873,54 @@ export default function Page() {
                 </div>
             </section>
 
-            {/* Contact Section */}
+            {/* Invest or Connect Section */}
             <section id="contact" className="py-24 md:py-32 bg-[#d7d3d1] relative" data-oid="-nmovkb">
                 <div
-                    className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.05]"
+                    className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.05] pointer-events-none"
                     data-oid="wrduul6"
                 ></div>
 
                 <div className="max-w-7xl mx-auto px-6" data-oid="3e:rb1_">
-                    <div className="grid md:grid-cols-2 gap-12" data-oid="czxxo0k">
-                        <div data-oid=":5viq_p">
+                    {/* Use flexbox for layout: left (info), right (button) */}
+                    <div className="flex flex-col md:flex-row justify-between items-start gap-8 md:gap-12" data-oid="czxxo0k">
+                        {/* Left Area: Title, Company Info, Email */}
+                        <div className="flex flex-col gap-4" data-oid=":5viq_p">
                             <h2
-                                className="text-3xl md:text-4xl font-medium mb-6 font-montserrat"
+                                className="text-3xl md:text-4xl font-medium mb-2 font-montserrat" // Reduced bottom margin
                                 data-oid="dd1xax:"
                             >
-                                Get in Touch
+                                Invest or Connect
                             </h2>
-                            <p className="text-muted-foreground mb-8 font-light" data-oid="z3xwyaq">
-                                Interested in working with us or learning more about our services?
-                                We&apos;d love to hear from you.
-                            </p>
-
-                            <div className="space-y-4" data-oid="6e1mq1m">
-                                <div data-oid="e6rzcfd">
-                                    <h4
-                                        className="text-sm text-muted-foreground mb-1"
-                                        data-oid=".w_99sp"
-                                    >
-                                        Email
-                                    </h4>
-                                    <p className="text-foreground" data-oid="vt.kz1h">
-                                        contact@hebstudios.com
-                                    </p>
-                                </div>
-                                <div data-oid="64gm9z3">
-                                    <h4
-                                        className="text-sm text-muted-foreground mb-1"
-                                        data-oid=":pxyr6w"
-                                    >
-                                        Location
-                                    </h4>
-                                    <p className="text-foreground" data-oid="-_ml_9e">
-                                        Singapore
-                                    </p>
-                                </div>
+                            <div className="text-foreground font-light" data-oid="company-info">
+                                <p>HEB Studios Pte. Ltd.</p>
+                                <p>Republic of Singapore</p>
+                            </div>
+                            <div data-oid="e6rzcfd">
+                                <h4
+                                    className="text-sm text-muted-foreground mb-1"
+                                    data-oid=".w_99sp"
+                                >
+                                    Primary Contact
+                                </h4>
+                                <p className="text-foreground" data-oid="vt.kz1h">
+                                    <a href="mailto:solaris@the-legend.io" className="hover:underline"> {/* Updated Email */}
+                                        solaris@the-legend.io
+                                    </a>
+                                </p>
                             </div>
                         </div>
 
-                        <div data-oid="wdat431">
-                            <form className="space-y-6" data-oid="k.7vtz5">
-                                <div data-oid="1s3oacy">
-                                    <label
-                                        htmlFor="name"
-                                        className="block text-sm text-muted-foreground mb-2"
-                                        data-oid="kh1ygn1"
-                                    >
-                                        Name
-                                    </label>
-                                    <input
-                                        type="text"
-                                        id="name"
-                                        className="w-full bg-input border rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-ring"
-                                        data-oid="ao06tg7"
-                                    />
-                                </div>
-
-                                <div data-oid="vyydc0_">
-                                    <label
-                                        htmlFor="email"
-                                        className="block text-sm text-muted-foreground mb-2"
-                                        data-oid="r70j_x."
-                                    >
-                                        Email
-                                    </label>
-                                    <input
-                                        type="email"
-                                        id="email"
-                                        className="w-full bg-input border rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-ring"
-                                        data-oid="i_wutpk"
-                                    />
-                                </div>
-
-                                <div data-oid=".-lcp21">
-                                    <label
-                                        htmlFor="message"
-                                        className="block text-sm text-muted-foreground mb-2"
-                                        data-oid="j.u1odx"
-                                    >
-                                        Message
-                                    </label>
-                                    <textarea
-                                        id="message"
-                                        rows="4"
-                                        className="w-full bg-input border rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-ring"
-                                        data-oid="osdc-hd"
-                                    ></textarea>
-                                </div>
-
-                                <button
-                                    className="w-full px-6 py-3 bg-primary text-primary-foreground hover:bg-primary/90 rounded-full transition-colors"
-                                    data-oid="ib-tqja"
-                                >
-                                    Send Message
-                                </button>
-                            </form>
+                        {/* Right Area: Pitch Deck Button */}
+                        <div className="flex-shrink-0 mt-2 md:mt-12" data-oid="pitch-deck-container"> {/* Increased desktop top margin */}
+                            <a
+                                href="/le-heb-pitchdeck-public/index.html"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-block px-8 py-4 bg-primary text-primary-foreground rounded-full text-lg font-semibold shadow-lg hover:shadow-2xl hover:scale-105 transition-all duration-200 ease-in-out" // Larger button styles, updated hover
+                                data-oid="pitch-deck-btn" // Added data-oid for potential tracking
+                            >
+                                View Pitch Deck
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -975,4 +988,3 @@ export default function Page() {
         </div>
     );
 }
-
