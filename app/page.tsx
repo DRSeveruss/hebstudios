@@ -730,7 +730,7 @@ export default function Page() {
                             <h3
                                 className="text-xl font-semibold mb-2 font-montserrat"
                             >
-                                Khalid "Solaris"
+                                Khalid &amp;quot;Solaris&amp;quot;
                             </h3>
                             <p className="text-muted-foreground font-light mb-4 group-hover:text-foreground transition-colors">
                                 Operations Director & Studio Lead | Finance + UE5 Expert
