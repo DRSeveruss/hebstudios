@@ -202,14 +202,14 @@ export default function Page() {
     const projects = [
         {
             id: 'bananium',
-            title: 'bananium.ai',
+            title: 'Bananium AI',
             description:
-                'A bleeding-edge AAA auto-battler with where users own AI Agent fighters who battle in immersive arenas.',
+                'A bleeding-edge AAA auto-battler with where users watch AI Agent fighters who battle in immersive arenas.',
             image: 'https://images.unsplash.com/photo-1639322537504-6427a16b0a28?q=80&w=1000',
         },
         {
             id: 'legend',
-            title: 'the-legend.io',
+            title: 'The Legend',
             description:
                 'An epic storytelling experience built with Unreal Engine 5, pushing the boundaries of web-based immersive narratives.',
             image: 'https://images.unsplash.com/photo-1642427749670-f20e2e76ed8c?q=80&w=1000',
@@ -452,7 +452,7 @@ export default function Page() {
                     >
                         Building the future of{' '}
                         <span className="text-primary" data-oid="llrm2wd">
-                            Web3 experiences
+                            online experiences
                         </span>
                     </h1>
 
@@ -460,7 +460,7 @@ export default function Page() {
                         className="text-lg md:text-xl text-primary max-w-2xl mb-12 font-light"
                         data-oid="89pqiqt"
                     >
-                        HEB Studios specializes in creating cutting-edge Web3 projects with AAA
+                        HEB Studios specializes in creating cutting-edge projects with AAA
                         quality design, Unreal Engine 5, and immersive storytelling.
                     </p>
 
@@ -498,7 +498,7 @@ export default function Page() {
                             </h2>
                             <p className="text-foreground mb-6 font-light" data-oid="u29li6v">
                                 HEB Studios Pte. Ltd. is a Singapore-based creative technology
-                                company specializing in building cutting-edge Web3 oriented projects
+                                company specializing in building cutting-edge projects
                                 and experiences.
                             </p>
                             <p className="text-foreground mb-6 font-light" data-oid="tnt1p6m">
@@ -508,7 +508,7 @@ export default function Page() {
                             </p>
                             <p className="text-foreground font-light" data-oid="nghz5bn">
                                 Our mission is to bridge the gap between traditional digital
-                                experiences and the emerging Web3 ecosystem, creating products that
+                                experiences and the emerging web-based technologies, creating products that
                                 are not only technologically advanced but also accessible and
                                 engaging.
                             </p>
@@ -673,7 +673,7 @@ export default function Page() {
                                                     href="https://bananium.ai/"
                                                     target="_blank"
                                                     rel="noopener noreferrer"
-                                                    className="px-4 py-2 border border-foreground rounded-full text-sm hover:bg-accent hover:text-accent-foreground transition-colors"
+                                                    className="hidden px-4 py-2 border border-foreground rounded-full text-sm hover:bg-accent hover:text-accent-foreground transition-colors"
                                                     // Prevent click propagation to parent div only on desktop
                                                     onClick={(e) => { if (window.innerWidth >= 768) e.stopPropagation(); }}
                                                 >
@@ -684,7 +684,7 @@ export default function Page() {
                                                     href="https://the-legend.io/"
                                                     target="_blank"
                                                     rel="noopener noreferrer"
-                                                    className="px-4 py-2 border border-foreground rounded-full text-sm hover:bg-accent hover:text-accent-foreground transition-colors"
+                                                    className="hidden px-4 py-2 border border-foreground rounded-full text-sm hover:bg-accent hover:text-accent-foreground transition-colors"
                                                     // Prevent click propagation to parent div only on desktop
                                                     onClick={(e) => { if (window.innerWidth >= 768) e.stopPropagation(); }}
                                                 >
@@ -779,7 +779,7 @@ export default function Page() {
                                 Hando
                             </h3>
                             <p className="text-muted-foreground font-light mb-4 group-hover:text-foreground transition-colors">
-                                Technical Director | Web3 + Full-Stack Dev
+                                Technical Director | Full-Stack Dev
                             </p>
                             <div className="w-12 h-1 bg-primary/30 rounded-full group-hover:bg-primary/60 transition-colors"></div>
                         </div>
@@ -802,7 +802,7 @@ export default function Page() {
                                 DRSeverus
                             </h3>
                             <p className="text-muted-foreground font-light mb-4 group-hover:text-foreground transition-colors">
-                                Blockchain Strategist | Product + Operations
+                                Strategist | Product + Operations
                             </p>
                             <div className="w-12 h-1 bg-primary/30 rounded-full group-hover:bg-primary/60 transition-colors"></div>
                         </div>
@@ -835,10 +835,10 @@ export default function Page() {
                                     'Leveraging the latest in real-time 3D technology for immersive experiences.',
                             },
                             {
-                                title: 'Web3 Integration',
+                                title: 'Web Integration',
                                 icon: '⬢',
                                 description:
-                                    'Seamlessly connecting traditional web with blockchain technologies.',
+                                    'Seamlessly connecting traditional gaming with emerging web technologies.',
                             },
                             {
                                 title: 'Storytelling',
