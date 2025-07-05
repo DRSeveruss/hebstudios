@@ -271,7 +271,7 @@ export default function Page() {
                             className="hover:text-foreground transition-colors"
                             data-oid="jjw0__c"
                         >
-                            Projects
+                            Our IPs
                         </a>
                         <a
                             href="#team"
@@ -368,7 +368,7 @@ export default function Page() {
                                 }
                             }}
                         >
-                            Projects
+                            Our IPs
                         </a>
                         <a
                             href="#team"
@@ -542,7 +542,7 @@ export default function Page() {
                         className="text-3xl md:text-4xl font-medium mb-16 font-montserrat"
                         data-oid="q9tgp8a"
                     >
-                        Our Projects
+                        Our IPs
                     </h2>
 
                     <div className="grid md:grid-cols-2 gap-8" data-oid="9j.f9tw">
